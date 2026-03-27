@@ -1,0 +1,1 @@
+<?php require_once __DIR__.'/helpers.php'; ensure_session(); session_destroy(); redirect('login.php');
