@@ -106,6 +106,14 @@ $teacher_res = $conn->query("SELECT id, username FROM users WHERE role = 'teache
 $teachers = $teacher_res->fetch_all(MYSQLI_ASSOC);
 
 $u_term = "%$user_search%";
+
+// Get total users for pagination
+$stmt_u_count = $conn->prepare("SELECT COUNT(*) as total FROM users WHERE username LIKE ?");
+$stmt_u_count->bind_param('s', $u_term);
+$stmt_u_count->execute();
+$total_users = $stmt_u_count->get_result()->fetch_assoc()['total'];
+$total_user_pages = ceil($total_users / $limit);
+
 $stmt_u = $conn->prepare("SELECT u.id, u.username, u.role, CONCAT(s.first_name, ' ', s.last_name) as student_name, s.course, s.year_section 
                           FROM users u LEFT JOIN students s ON u.id = s.user_id 
                           WHERE u.username LIKE ? ORDER BY u.id DESC LIMIT ? OFFSET ?");
@@ -118,6 +126,14 @@ $stats = ['admin' => 0, 'teacher' => 0, 'student' => 0];
 while($row = $counts_res->fetch_assoc()) { $stats[$row['role']] = $row['total']; }
 
 $e_term = "%$exam_search%";
+
+// Get total exams for pagination
+$stmt_e_count = $conn->prepare("SELECT COUNT(*) as total FROM exams WHERE title LIKE ?");
+$stmt_e_count->bind_param('s', $e_term);
+$stmt_e_count->execute();
+$total_exams = $stmt_e_count->get_result()->fetch_assoc()['total'];
+$total_exam_pages = ceil($total_exams / $limit);
+
 $stmt_e = $conn->prepare("SELECT e.*, u.username as teacher_name FROM exams e LEFT JOIN users u ON u.id = e.created_by WHERE e.title LIKE ? ORDER BY e.id DESC LIMIT ? OFFSET ?");
 $stmt_e->bind_param('sii', $e_term, $limit, $exam_offset);
 $stmt_e->execute();
@@ -170,6 +186,10 @@ $exam_stats = $conn->query($stats_query);
         .badge { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; }
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
         .modal-content { background:white; margin: 10% auto; padding: 30px; width: 400px; border-radius: 16px; }
+        .pagination { display: flex; gap: 5px; margin-top: 20px; justify-content: center; }
+        .pagination a { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text); background: #fff; font-size: 14px; transition: 0.2s; }
+        .pagination a.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .pagination a:hover:not(.active) { background: #f0f0f0; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
     </style>
 </head>
@@ -259,6 +279,15 @@ $exam_stats = $conn->query($stats_query);
                 </tr>
                 <?php endwhile; ?>
             </table>
+
+            <!-- User Pagination -->
+            <?php if ($total_user_pages > 1): ?>
+            <div class="pagination">
+                <?php for ($i = 1; $i <= $total_user_pages; $i++): ?>
+                    <a href="?upage=<?= $i ?>&epage=<?= $exam_page ?>&usearch=<?= urlencode($user_search) ?>&esearch=<?= urlencode($exam_search) ?>&tab=user-tab" class="<?= ($i == $user_page) ? 'active' : '' ?>"><?= $i ?></a>
+                <?php endfor; ?>
+            </div>
+            <?php endif; ?>
         </div>
 
         <div id="exam-tab" class="admin-tab-content">
@@ -297,6 +326,15 @@ $exam_stats = $conn->query($stats_query);
                 </tr>
                 <?php endwhile; ?>
             </table>
+
+            <!-- Exam Pagination -->
+            <?php if ($total_exam_pages > 1): ?>
+            <div class="pagination">
+                <?php for ($i = 1; $i <= $total_exam_pages; $i++): ?>
+                    <a href="?upage=<?= $user_page ?>&epage=<?= $i ?>&usearch=<?= urlencode($user_search) ?>&esearch=<?= urlencode($exam_search) ?>&tab=exam-tab" class="<?= ($i == $exam_page) ? 'active' : '' ?>"><?= $i ?></a>
+                <?php endfor; ?>
+            </div>
+            <?php endif; ?>
         </div>
 
         <div id="stats-tab" class="admin-tab-content">
