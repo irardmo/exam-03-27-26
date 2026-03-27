@@ -67,7 +67,8 @@ if ($existingAttempt) {
        Professional Tip: If you have a 'period' column in your questions table, 
        add "AND period = '{$exam['description']}'" to the WHERE clause.
     */
-    $qstmt = $conn->prepare("SELECT DISTINCT id FROM questions WHERE exam_id = ? ORDER BY RAND() LIMIT 50");
+    // Group by question_text to ensure unique questions even if they are duplicated in the database
+    $qstmt = $conn->prepare("SELECT MIN(id) as id FROM questions WHERE exam_id = ? GROUP BY question_text ORDER BY RAND() LIMIT 50");
     $qstmt->bind_param("i", $exam_id);
     $qstmt->execute();
     $q_res = $qstmt->get_result();
@@ -76,9 +77,6 @@ if ($existingAttempt) {
     while($row = $q_res->fetch_assoc()) {
         $question_ids[] = (int)$row['id'];
     }
-    
-    // Safety check for duplicates
-    $question_ids = array_unique($question_ids);
     
     if (empty($question_ids)) {
         echo "<script>alert('No questions found for this specific period.'); window.location.href='student_dashboard.php';</script>";
