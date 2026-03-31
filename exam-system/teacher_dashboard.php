@@ -24,12 +24,14 @@ $offset = ($upage - 1) * $limit;
 $f_exam = $_GET['f_exam'] ?? ''; 
 $f_course = $_GET['f_course'] ?? ''; 
 $f_section = $_GET['f_section'] ?? ''; 
+$f_period = $_GET['f_period'] ?? '';
 $f_search = $_GET['f_search'] ?? ''; 
  
 $where_clauses = ["e.created_by = $teacher_id", "a.submitted_at IS NOT NULL"]; 
 if($f_exam) $where_clauses[] = "e.id = " . (int)$f_exam; 
 if($f_course) $where_clauses[] = "s.course = '" . $conn->real_escape_string($f_course) . "'"; 
 if($f_section) $where_clauses[] = "s.year_section = '" . $conn->real_escape_string($f_section) . "'"; 
+if($f_period) $where_clauses[] = "e.description = '" . $conn->real_escape_string($f_period) . "'";
  
 if($f_search) { 
     $safe_s = $conn->real_escape_string($f_search); 
@@ -482,6 +484,16 @@ if (isset($_GET['delete_img'])) {
                     </select> 
                 </div> 
  
+                <div class="teacher-dashboard-input-wrapper">
+                    <label>Period</label>
+                    <select name="f_period">
+                        <option value="">All Periods</option>
+                        <option value="Prelim Exam" <?= ($f_period == 'Prelim Exam') ? 'selected' : '' ?>>Prelim Exam</option>
+                        <option value="Midterm Exam" <?= ($f_period == 'Midterm Exam') ? 'selected' : '' ?>>Midterm Exam</option>
+                        <option value="Final Exam" <?= ($f_period == 'Final Exam') ? 'selected' : '' ?>>Final Exam</option>
+                    </select>
+                </div>
+
                 <div class="teacher-dashboard-input-wrapper"> 
                     <label>Course</label> 
                     <select name="f_course"> 
