@@ -15,6 +15,7 @@ $teacher_id = (int)$_SESSION['user']['id'];
 $f_exam    = $_GET['f_exam'] ?? '';
 $f_course  = $_GET['f_course'] ?? '';
 $f_section = $_GET['f_section'] ?? '';
+$f_period  = $_GET['f_period'] ?? '';
 
 // 3. Set Headers for CSV Download
 header('Content-Type: text/csv; charset=utf-8');
@@ -73,6 +74,12 @@ if (!empty($f_course)) {
 if (!empty($f_section)) {
     $section_safe = $conn->real_escape_string($f_section);
     $sql .= " AND st.year_section = '$section_safe'";
+}
+
+// Apply Period Filter
+if (!empty($f_period)) {
+    $period_safe = $conn->real_escape_string($f_period);
+    $sql .= " AND e.description = '$period_safe'";
 }
 
 $sql .= " ORDER BY st.last_name ASC, st.first_name ASC";

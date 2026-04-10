@@ -42,6 +42,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt_check->num_rows > 0) {
             $error = "Username already exists!";
         } else {
+            // Check if student with same first and last name already exists
+            $stmt_name_check = $conn->prepare("SELECT user_id FROM students WHERE first_name = ? AND last_name = ?");
+            $stmt_name_check->bind_param("ss", $first_name, $last_name);
+            $stmt_name_check->execute();
+            $stmt_name_check->store_result();
+
+            if ($stmt_name_check->num_rows > 0) {
+                $error = "A student with this name already exists!";
+                $stmt_name_check->close();
+            } else {
+                $stmt_name_check->close();
             // --- START TRANSACTION ---
             $conn->begin_transaction();
             $success_flag = true;
@@ -76,14 +87,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            // 4. Finalize transaction
-            if ($success_flag) {
-                $conn->commit();
-                $success = "Registration successful! You can now login.";
-            } else {
-                $conn->rollback();
-                // Use a generic error message for security, logging the database error separately if needed
-                $error = "Registration failed due to a database error."; 
+                // 4. Finalize transaction
+                if ($success_flag) {
+                    $conn->commit();
+                    $success = "Registration successful! You can now login.";
+                } else {
+                    $conn->rollback();
+                    // Use a generic error message for security, logging the database error separately if needed
+                    $error = "Registration failed due to a database error.";
+                }
             }
         }
         $stmt_check->close();
