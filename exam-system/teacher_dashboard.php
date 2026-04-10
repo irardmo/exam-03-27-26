@@ -553,7 +553,7 @@ if (isset($_GET['delete_img'])) {
             <?php if ($total_pages > 1): ?> 
             <div class="pagination"> 
                 <?php for ($i = 1; $i <= $total_pages; $i++): ?> 
-                    <a href="?tab=student-results&upage=<?= $i ?>&f_search=<?= urlencode($f_search) ?>&f_exam=<?= $f_exam ?>"  
+                    <a href="?tab=student-results&upage=<?= $i ?>&f_search=<?= urlencode($f_search) ?>&f_exam=<?= $f_exam ?>&f_course=<?= urlencode($f_course) ?>&f_section=<?= urlencode($f_section) ?>&f_period=<?= urlencode($f_period) ?>"
                        class="page-link <?= ($upage == $i) ? 'active' : '' ?>"> 
                         <?= $i ?> 
                     </a> 
